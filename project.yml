@@ -1,0 +1,41 @@
+name: PokerApp
+options:
+  bundleIdPrefix: com.giuseppemangione.pokerapp
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+
+configs:
+  Debug: debug
+  Release: release
+
+targets:
+  PokerApp:
+    type: application
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources:
+      - path: PokerApp
+    info:
+      path: PokerApp/Resources/Info.plist
+      properties:
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        CFBundleDisplayName: Texas Poker
+        UIRequiresFullScreen: true
+        ITSAppUsesNonExemptEncryption: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.giuseppemangione.pokerapp
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: "1"
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1"
+        DEVELOPMENT_TEAM: ""
+        CODE_SIGN_STYLE: Automatic
+        GENERATE_INFOPLIST_FILE: false
