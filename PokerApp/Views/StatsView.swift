@@ -3,33 +3,53 @@ import SwiftUI
 struct StatsView: View {
     @StateObject private var store = StatsStore.shared
 
+    private var rows: [(String, String)] {
+        [
+            ("Mani giocate", "\(store.stats.handsPlayed)"),
+            ("Mani vinte", "\(store.stats.handsWon)  ·  \(percent(store.stats.winRate))"),
+            ("Piatto più grande vinto", "\(store.stats.biggestPotWon)"),
+            ("Fiches totali vinte", "\(store.stats.totalChipsWon)"),
+            ("VPIP — mani giocate volontariamente", percent(store.stats.vpipPercentage)),
+            ("PFR — rilanci preflop", percent(store.stats.pfrPercentage)),
+            ("Mani in modalità Principiante", "\(store.stats.handsCompletedInBeginnerMode)")
+        ]
+    }
+
     var body: some View {
-        ScrollView {
-            VStack(spacing: 14) {
-                statCard(title: "Mani giocate", value: "\(store.stats.handsPlayed)")
-                statCard(title: "Mani vinte", value: "\(store.stats.handsWon)  (\(percent(store.stats.winRate)))")
-                statCard(title: "Piatto più grande vinto", value: "\(store.stats.biggestPotWon)")
-                statCard(title: "Fiches totali vinte", value: "\(store.stats.totalChipsWon)")
-                statCard(title: "VPIP (% mani giocate volontariamente)", value: percent(store.stats.vpipPercentage))
-                statCard(title: "PFR (% rilanci preflop)", value: percent(store.stats.pfrPercentage))
-                statCard(title: "Mani completate in modalità Principiante", value: "\(store.stats.handsCompletedInBeginnerMode)")
+        ZStack {
+            ParchmentBackground()
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Il Libro Mastro")
+                    .font(Frontier.Font.display(26))
+                    .foregroundColor(Frontier.Color.ink)
+                    .padding(.top, 14)
+                Text("STATISTICHE DEL GIOCATORE")
+                    .font(Frontier.Font.stamp(10))
+                    .tracking(1.5)
+                    .foregroundColor(Frontier.Color.rustDark)
+                    .padding(.bottom, 6)
+
+                ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+                    HStack(alignment: .lastTextBaseline) {
+                        Text(row.0)
+                            .font(Frontier.Font.body(13, italic: true))
+                            .foregroundColor(Frontier.Color.inkSoft)
+                        Spacer(minLength: 8)
+                        Text(row.1)
+                            .font(Frontier.Font.stamp(15))
+                            .foregroundColor(Frontier.Color.rustDark)
+                    }
+                    .padding(.vertical, 6)
+                    Rectangle().fill(Frontier.Color.ink.opacity(0.12)).frame(height: 1)
+                }
+                Spacer()
             }
-            .padding()
+            .padding(.horizontal, 24)
         }
-        .background(Color(red: 0.05, green: 0.08, blue: 0.12).ignoresSafeArea())
-        .navigationTitle("Statistiche")
+        .navigationTitle("")
+        .toolbarBackground(.hidden, for: .navigationBar)
         .preferredColorScheme(.dark)
     }
 
     private func percent(_ v: Double) -> String { "\(Int((v * 100).rounded()))%" }
-
-    private func statCard(title: String, value: String) -> some View {
-        HStack {
-            Text(title).font(.subheadline).foregroundColor(.white.opacity(0.75))
-            Spacer()
-            Text(value).font(.headline).foregroundColor(.white)
-        }
-        .padding()
-        .background(RoundedRectangle(cornerRadius: 14).fill(Color.white.opacity(0.06)))
-    }
 }

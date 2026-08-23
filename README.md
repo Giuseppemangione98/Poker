@@ -3,6 +3,23 @@
 App nativa iOS in **SwiftUI**, Texas Hold'em completo, offline contro bot IA, con
 animazioni, feedback aptici e una modalità Principiante che ti aiuta a imparare.
 
+## Direzione visiva: Frontiera / Far West
+
+L'interfaccia non usa un tema "app scura generica": è pensata come un dossier da
+saloon dell'Ovest — feltro rosso vissuto, ottone, cuoio, carta invecchiata.
+Tre font reali sono inclusi nel bundle (`PokerApp/Resources/Fonts`, licenze
+libere — SIL Open Font License per Rye/Vollkorn, Apache 2.0 per Special Elite,
+testi inclusi nella stessa cartella) e dichiarati in `Info.plist` (`UIAppFonts`):
+
+- **Rye** — titoli e pulsanti, lettering da manifesto western.
+- **Vollkorn** — testo lungo (tutorial, spiegazioni), un serif da vecchio libro.
+- **Special Elite** — numeri, statistiche, etichette: una macchina da scrivere
+  vissuta, per il feeling da "libro mastro"/rapporto investigativo.
+
+Nessuna texture fotografica bundlata: la grana della carta/legno è generata a
+runtime con `Canvas` (vedi `GrainOverlay` in `App/Theme.swift`), quindi resta
+leggera e non richiede asset binari pesanti.
+
 ## Cosa include
 
 - **Motore di gioco completo**: mazzo, valutazione mani a 7 carte, bui, giri di

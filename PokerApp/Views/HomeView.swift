@@ -7,77 +7,86 @@ struct HomeView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Color(red: 0.03, green: 0.12, blue: 0.08), Color(red: 0.01, green: 0.04, blue: 0.03)],
-                            startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea()
+            LeatherBackground()
 
-            VStack(spacing: 26) {
-                Spacer(minLength: 20)
-
-                VStack(spacing: 4) {
+            HStack(spacing: 0) {
+                VStack(alignment: .leading, spacing: 10) {
+                    Spacer()
                     Text("♠ ♥ ♣ ♦")
-                        .font(.title3)
-                        .foregroundColor(.white.opacity(0.5))
-                    Text("TEXAS HOLD'EM")
-                        .font(.system(size: 34, weight: .heavy, design: .rounded))
-                        .foregroundColor(.white)
-                        .shadow(color: .yellow.opacity(titlePulse ? 0.7 : 0.2), radius: titlePulse ? 14 : 4)
-                    Text("Poker offline · Bot IA")
-                        .font(.footnote)
-                        .foregroundColor(.white.opacity(0.55))
+                        .font(Frontier.Font.stamp(13))
+                        .tracking(6)
+                        .foregroundColor(Frontier.Color.brassHi.opacity(0.7))
+                    Text("TEXAS\nHOLD'EM")
+                        .font(Frontier.Font.display(38))
+                        .foregroundColor(Frontier.Color.paperHi)
+                        .lineSpacing(-4)
+                        .shadow(color: Frontier.Color.rust.opacity(titlePulse ? 0.6 : 0.15), radius: titlePulse ? 18 : 5)
+                    Text("POKER OFFLINE · NESSUNA RETE")
+                        .font(Frontier.Font.stamp(9.5))
+                        .foregroundColor(Frontier.Color.paperLo)
+                    Spacer()
+                }
+                .padding(.trailing, 22)
+                .overlay(alignment: .trailing) {
+                    Rectangle().fill(Frontier.Color.brass.opacity(0.25)).frame(width: 1)
                 }
                 .onAppear {
-                    withAnimation(.easeInOut(duration: 1.6).repeatForever(autoreverses: true)) {
+                    withAnimation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true)) {
                         titlePulse = true
                     }
                 }
 
-                Spacer()
-
-                VStack(spacing: 14) {
-                    menuButton(title: "Modalità Principiante", subtitle: "Impara con suggerimenti e analisi", systemImage: "graduationcap.fill", color: .blue) {
+                VStack(spacing: 10) {
+                    Spacer()
+                    menuButton(title: "Modalità Principiante", subtitle: "Suggerimenti e analisi", mark: "◆", tint: Frontier.Color.rust, primary: true) {
                         appState.goToModeSelection(beginner: true)
                     }
-                    menuButton(title: "Modalità Classica", subtitle: "Gioca senza aiuti", systemImage: "suit.spade.fill", color: .green) {
+                    menuButton(title: "Modalità Classica", subtitle: "Gioca senza aiuti", mark: "♠", tint: Frontier.Color.sageDark, primary: false) {
                         appState.goToModeSelection(beginner: false)
                     }
-                    menuButton(title: "Statistiche", subtitle: "\(stats.stats.handsPlayed) mani giocate", systemImage: "chart.bar.fill", color: .orange) {
+                    menuButton(title: "Statistiche", subtitle: "\(stats.stats.handsPlayed) mani giocate", mark: "§", tint: Frontier.Color.brass, primary: false) {
                         appState.path.append(.stats)
                     }
-                    menuButton(title: "Regole & Classifica mani", subtitle: "Ripassa le combinazioni", systemImage: "list.number", color: .purple) {
+                    menuButton(title: "Regole & classifica mani", subtitle: "Ripassa le combinazioni", mark: "✦", tint: Frontier.Color.wood700, primary: false) {
                         appState.path.append(.handRankings)
                     }
-                    menuButton(title: "Impostazioni", subtitle: "Aptica, suoni, tavolo", systemImage: "gearshape.fill", color: .gray) {
+                    menuButton(title: "Impostazioni", subtitle: "Aptica, suoni, tavolo", mark: "⚙", tint: Frontier.Color.iron, primary: false) {
                         appState.path.append(.settings)
                     }
+                    Spacer()
                 }
-                .padding(.horizontal, 24)
-
-                Spacer(minLength: 20)
+                .padding(.leading, 22)
             }
+            .padding(.horizontal, 26)
+            .padding(.vertical, 14)
         }
         .preferredColorScheme(.dark)
     }
 
-    private func menuButton(title: String, subtitle: String, systemImage: String, color: Color, action: @escaping () -> Void) -> some View {
+    private func menuButton(title: String, subtitle: String, mark: String, tint: Color, primary: Bool, action: @escaping () -> Void) -> some View {
         Button {
             HapticManager.shared.buttonTap()
             action()
         } label: {
-            HStack(spacing: 14) {
+            HStack(spacing: 13) {
                 ZStack {
-                    Circle().fill(color.opacity(0.25)).frame(width: 46, height: 46)
-                    Image(systemName: systemImage).foregroundColor(color).font(.title3)
+                    Circle().fill(tint).frame(width: 34, height: 34)
+                    Circle().stroke(Frontier.Color.brassHi.opacity(0.6), lineWidth: 1)
+                    Text(mark).font(Frontier.Font.display(14)).foregroundColor(Frontier.Color.paperHi)
                 }
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title).font(.headline).foregroundColor(.white)
-                    Text(subtitle).font(.caption).foregroundColor(.white.opacity(0.6))
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(title).font(Frontier.Font.bodyBold(14)).foregroundColor(Frontier.Color.paperHi)
+                    Text(subtitle).font(Frontier.Font.stamp(9)).foregroundColor(Frontier.Color.paperLo)
                 }
                 Spacer()
-                Image(systemName: "chevron.right").foregroundColor(.white.opacity(0.4))
+                Text("›").font(Frontier.Font.display(16)).foregroundColor(Frontier.Color.brass.opacity(0.7))
             }
-            .padding(14)
-            .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Color.white.opacity(0.06)))
+            .padding(10)
+            .background(
+                RoundedRectangle(cornerRadius: 3, style: .continuous)
+                    .fill(Color.black.opacity(primary ? 0.28 : 0.16))
+            )
+            .overlay(RoundedRectangle(cornerRadius: 3).stroke(primary ? Frontier.Color.brass.opacity(0.55) : Frontier.Color.paperLo.opacity(0.12), lineWidth: 1))
         }
         .buttonStyle(PressableButtonStyle())
     }

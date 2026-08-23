@@ -16,26 +16,29 @@ struct ActionBarView: View {
                 if showRaiseSlider, let bounds = info.raiseBounds {
                     raiseSlider(bounds: bounds, human: human)
                 }
-                HStack(spacing: 10) {
-                    actionButton(title: "Fold", color: .red.opacity(0.85)) {
+                HStack(spacing: 8) {
+                    Button("Fold") {
                         vm.humanFold()
                         showRaiseSlider = false
                     }
+                    .buttonStyle(LeatherTagButtonStyle(tint: Frontier.Color.rustDark))
 
                     if info.canCheck {
-                        actionButton(title: "Check", color: .blue.opacity(0.85)) {
+                        Button("Check") {
                             vm.humanCheck()
                             showRaiseSlider = false
                         }
+                        .buttonStyle(LeatherTagButtonStyle(tint: Frontier.Color.sageDark))
                     } else {
-                        actionButton(title: "Call \(info.callAmount)", color: .blue.opacity(0.85)) {
+                        Button("Call \(info.callAmount)") {
                             vm.humanCall()
                             showRaiseSlider = false
                         }
+                        .buttonStyle(LeatherTagButtonStyle(tint: Frontier.Color.sageDark))
                     }
 
                     if let bounds = info.raiseBounds {
-                        actionButton(title: showRaiseSlider ? "Conferma" : (info.canCheck ? "Bet" : "Raise"), color: .green.opacity(0.9)) {
+                        Button(showRaiseSlider ? "Conferma" : (info.canCheck ? "Bet" : "Raise")) {
                             if showRaiseSlider {
                                 vm.humanBetOrRaise(Int(raiseAmount), isRaise: !info.canCheck)
                                 showRaiseSlider = false
@@ -45,29 +48,36 @@ struct ActionBarView: View {
                                 HapticManager.shared.selectionTick()
                             }
                         }
-                        actionButton(title: "All-in", color: .purple.opacity(0.9)) {
+                        .buttonStyle(LeatherTagButtonStyle(tint: Frontier.Color.brass))
+
+                        Button("All-in") {
                             vm.humanAllIn()
                             showRaiseSlider = false
                         }
+                        .buttonStyle(LeatherTagButtonStyle(tint: Frontier.Color.wood700))
                     }
                 }
             }
             .padding(10)
-            .background(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Color.black.opacity(0.55)))
+            .background(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(Frontier.Color.iron.opacity(0.82))
+                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Frontier.Color.brass.opacity(0.35), lineWidth: 1))
+            )
         )
     }
 
     private func raiseSlider(bounds: RaiseBounds, human: Player) -> some View {
         VStack(spacing: 4) {
             Text("Punta: \(Int(raiseAmount))")
-                .font(.subheadline.bold())
-                .foregroundColor(.white)
+                .font(Frontier.Font.stamp(13))
+                .foregroundColor(Frontier.Color.paperHi)
             Slider(value: $raiseAmount, in: Double(bounds.minTotal)...Double(max(bounds.minTotal, bounds.maxTotal)), step: 1)
-                .tint(.green)
+                .tint(Frontier.Color.brass)
                 .onChange(of: raiseAmount) { _ in HapticManager.shared.selectionTick() }
             HStack {
                 quickChip("Min") { raiseAmount = Double(bounds.minTotal) }
-                quickChip("Pot") { raiseAmount = Double(min(bounds.maxTotal, engine.potTotal)) }
+                quickChip("Piatto") { raiseAmount = Double(min(bounds.maxTotal, engine.potTotal)) }
                 quickChip("Max") { raiseAmount = Double(bounds.maxTotal) }
             }
         }
@@ -80,30 +90,10 @@ struct ActionBarView: View {
             action()
         }) {
             Text(title)
-                .font(.caption.bold())
+                .font(Frontier.Font.stamp(10))
                 .padding(.horizontal, 10).padding(.vertical, 4)
-                .background(Capsule().fill(Color.white.opacity(0.15)))
-                .foregroundColor(.white)
+                .background(Capsule().fill(Frontier.Color.paperLo.opacity(0.18)))
+                .foregroundColor(Frontier.Color.paperHi)
         }
-    }
-
-    private func actionButton(title: String, color: Color, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Text(title)
-                .font(.system(size: 14, weight: .bold, design: .rounded))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-                .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(color))
-                .foregroundColor(.white)
-        }
-        .buttonStyle(PressableButtonStyle())
-    }
-}
-
-struct PressableButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed ? 0.94 : 1.0)
-            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
     }
 }

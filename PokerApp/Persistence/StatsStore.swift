@@ -27,7 +27,6 @@ struct PlayerStats: Codable, Equatable {
 struct AppSettings: Codable, Equatable {
     var hapticsEnabled: Bool = true
     var soundEnabled: Bool = true
-    var tableFeltColorIndex: Int = 0
     var hasSeenTutorial: Bool = false
     var preferredDifficulty: BotDifficulty = .medium
     var preferredOpponentCount: Int = 4

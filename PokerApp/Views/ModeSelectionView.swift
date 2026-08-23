@@ -18,77 +18,86 @@ struct ModeSelectionView: View {
 
     var body: some View {
         ZStack {
-            Color(red: 0.05, green: 0.08, blue: 0.12).ignoresSafeArea()
+            LeatherBackground()
 
-            VStack(spacing: 26) {
-                Text(beginner ? "Modalità Principiante" : "Modalità Classica")
-                    .font(.title2.bold())
-                    .foregroundColor(.white)
-                    .padding(.top, 20)
+            HStack(spacing: 26) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(beginner ? "Il Contratto" : "La Sfida")
+                        .font(Frontier.Font.display(24))
+                        .foregroundColor(Frontier.Color.paperHi)
+                    Text(beginner ? "Modalità Principiante" : "Modalità Classica")
+                        .font(Frontier.Font.stamp(10))
+                        .foregroundColor(Frontier.Color.brassHi)
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Numero di avversari: \(Int(opponentCount))")
-                        .foregroundColor(.white)
-                        .font(.subheadline.bold())
-                    Slider(value: $opponentCount, in: 1...8, step: 1) { _ in HapticManager.shared.selectionTick() }
-                        .tint(.green)
+                    if beginner {
+                        VStack(alignment: .leading, spacing: 5) {
+                            featureRow("Suggerimenti in tempo reale")
+                            featureRow("Analisi dopo ogni mano")
+                            featureRow("Tutorial sempre disponibile")
+                        }
+                        .padding(.top, 14)
+                    }
                 }
-                .padding(.horizontal, 24)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Difficoltà avversari")
-                        .foregroundColor(.white)
-                        .font(.subheadline.bold())
-                    Picker("Difficoltà", selection: $difficulty) {
-                        ForEach(BotDifficulty.allCases, id: \.self) { d in
-                            Text(d.localizedName).tag(d)
+                VStack(spacing: 18) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("AVVERSARI AL TAVOLO — \(Int(opponentCount))")
+                            .font(Frontier.Font.stamp(10))
+                            .foregroundColor(Frontier.Color.paperLo)
+                        Slider(value: $opponentCount, in: 1...8, step: 1) { _ in HapticManager.shared.selectionTick() }
+                            .tint(Frontier.Color.rust)
+                    }
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("DIFFICOLTÀ AVVERSARI")
+                            .font(Frontier.Font.stamp(10))
+                            .foregroundColor(Frontier.Color.paperLo)
+                        HStack(spacing: 4) {
+                            ForEach(BotDifficulty.allCases, id: \.self) { d in
+                                Button(d.localizedName) {
+                                    HapticManager.shared.selectionTick()
+                                    difficulty = d
+                                }
+                                .font(Frontier.Font.display(11))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 7)
+                                .background(RoundedRectangle(cornerRadius: 3).fill(difficulty == d ? Frontier.Color.brass : Color.black.opacity(0.25)))
+                                .foregroundColor(difficulty == d ? Frontier.Color.ink : Frontier.Color.paperLo)
+                            }
                         }
                     }
-                    .pickerStyle(.segmented)
-                }
-                .padding(.horizontal, 24)
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Stack iniziale: \(Int(startingStack)) fiches")
-                        .foregroundColor(.white)
-                        .font(.subheadline.bold())
-                    Slider(value: $startingStack, in: 500...5000, step: 100) { _ in HapticManager.shared.selectionTick() }
-                        .tint(.yellow)
-                }
-                .padding(.horizontal, 24)
-
-                if beginner {
                     VStack(alignment: .leading, spacing: 6) {
-                        Label("Suggerimenti in tempo reale", systemImage: "checkmark.circle.fill")
-                        Label("Analisi dopo ogni mano", systemImage: "checkmark.circle.fill")
-                        Label("Tutorial regole sempre disponibile", systemImage: "checkmark.circle.fill")
+                        Text("FICHES INIZIALI — \(Int(startingStack))")
+                            .font(Frontier.Font.stamp(10))
+                            .foregroundColor(Frontier.Color.paperLo)
+                        Slider(value: $startingStack, in: 500...5000, step: 100) { _ in HapticManager.shared.selectionTick() }
+                            .tint(Frontier.Color.brass)
                     }
-                    .font(.caption)
-                    .foregroundColor(.green)
-                    .padding(.horizontal, 24)
-                }
 
-                Spacer()
-
-                Button {
-                    HapticManager.shared.buttonTap()
-                    stats.settings.preferredOpponentCount = Int(opponentCount)
-                    stats.settings.preferredDifficulty = difficulty
-                    appState.startGame(beginner: beginner, opponents: Int(opponentCount), difficulty: difficulty, stack: Int(startingStack))
-                } label: {
-                    Text("Siediti al tavolo")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Capsule().fill(Color.green))
-                        .foregroundColor(.white)
+                    Button("Siediti al tavolo") {
+                        HapticManager.shared.buttonTap()
+                        stats.settings.preferredOpponentCount = Int(opponentCount)
+                        stats.settings.preferredDifficulty = difficulty
+                        appState.startGame(beginner: beginner, opponents: Int(opponentCount), difficulty: difficulty, stack: Int(startingStack))
+                    }
+                    .buttonStyle(WaxSealButtonStyle())
                 }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 30)
+                .frame(maxWidth: .infinity)
             }
+            .padding(.horizontal, 30)
+            .padding(.vertical, 20)
         }
         .preferredColorScheme(.dark)
         .navigationTitle("")
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(.hidden, for: .navigationBar)
+    }
+
+    private func featureRow(_ text: String) -> some View {
+        HStack(spacing: 6) {
+            Text("✓").font(Frontier.Font.stamp(11)).foregroundColor(Frontier.Color.sage)
+            Text(text).font(Frontier.Font.body(12, italic: true)).foregroundColor(Frontier.Color.paperLo)
+        }
     }
 }

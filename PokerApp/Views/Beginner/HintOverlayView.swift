@@ -7,26 +7,28 @@ struct HintOverlayView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Image(systemName: "lightbulb.fill")
-                    .foregroundColor(.yellow)
                 Text("Consiglio: \(hint.suggestionLabel)")
-                    .font(.subheadline.bold())
-                    .foregroundColor(.white)
+                    .font(Frontier.Font.display(14))
+                    .foregroundColor(Frontier.Color.ink)
                 Spacer()
-                Text("Equity \(Int((hint.equity * 100).rounded()))%")
-                    .font(.caption.bold())
-                    .foregroundColor(.green)
+                Text("EQUITY \(Int((hint.equity * 100).rounded()))%")
+                    .font(Frontier.Font.stamp(10))
+                    .foregroundColor(Frontier.Color.rustDark)
             }
             Text(hint.explanation)
-                .font(.caption)
-                .foregroundColor(.white.opacity(0.85))
+                .font(Frontier.Font.body(11.5, italic: true))
+                .foregroundColor(Frontier.Color.inkSoft)
                 .fixedSize(horizontal: false, vertical: true)
 
             EquityBarView(equity: hint.equity, potOdds: hint.potOdds)
         }
-        .padding(10)
-        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Color.black.opacity(0.7)))
-        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.yellow.opacity(0.5), lineWidth: 1))
+        .padding(11)
+        .background(
+            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                .fill(LinearGradient(colors: [Frontier.Color.paperHi, Frontier.Color.paperLo], startPoint: .top, endPoint: .bottom))
+        )
+        .overlay(RoundedRectangle(cornerRadius: 4).stroke(Frontier.Color.ink.opacity(0.35), lineWidth: 1))
+        .shadow(color: .black.opacity(0.4), radius: 8, x: 0, y: 4)
         .scaleEffect(appeared ? 1 : 0.9)
         .opacity(appeared ? 1 : 0)
         .onAppear {
@@ -43,19 +45,20 @@ struct EquityBarView: View {
     var body: some View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
-                Capsule().fill(Color.white.opacity(0.15))
+                Capsule().fill(Frontier.Color.ink.opacity(0.12))
                 Capsule()
-                    .fill(LinearGradient(colors: [.red, .yellow, .green], startPoint: .leading, endPoint: .trailing))
+                    .fill(LinearGradient(colors: [Frontier.Color.rustDark, Frontier.Color.brass, Frontier.Color.sage], startPoint: .leading, endPoint: .trailing))
                     .frame(width: geo.size.width * CGFloat(equity))
                 if let potOdds {
                     Rectangle()
-                        .fill(Color.white)
+                        .fill(Frontier.Color.ink)
                         .frame(width: 2)
                         .offset(x: geo.size.width * CGFloat(potOdds))
                 }
             }
         }
-        .frame(height: 8)
+        .frame(height: 6)
+        .clipShape(Capsule())
         .animation(.easeInOut(duration: 0.3), value: equity)
     }
 }

@@ -6,26 +6,31 @@ struct CardView: View {
     var width: CGFloat = 56
     var highlighted: Bool = false
 
-    private var height: CGFloat { width * 1.4 }
+    private var height: CGFloat { width * 1.42 }
 
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: width * 0.14, style: .continuous)
-                .fill(Color(.systemBackground))
-                .overlay(
-                    RoundedRectangle(cornerRadius: width * 0.14, style: .continuous)
-                        .stroke(highlighted ? Color.yellow : Color.black.opacity(0.15), lineWidth: highlighted ? 3 : 1)
+            RoundedRectangle(cornerRadius: width * 0.1, style: .continuous)
+                .fill(
+                    LinearGradient(colors: [Frontier.Color.paperHi, Frontier.Color.paper],
+                                   startPoint: .topLeading, endPoint: .bottomTrailing)
                 )
-                .shadow(color: .black.opacity(0.35), radius: 3, x: 0, y: 2)
+                .overlay(
+                    RoundedRectangle(cornerRadius: width * 0.1, style: .continuous)
+                        .strokeBorder(highlighted ? Frontier.Color.brassHi : Frontier.Color.ink.opacity(0.35),
+                                      lineWidth: highlighted ? 2.5 : 1)
+                )
+                .overlay(GrainOverlay(opacity: 0.10, blend: .multiply).clipShape(RoundedRectangle(cornerRadius: width * 0.1, style: .continuous)))
+                .shadow(color: .black.opacity(0.45), radius: 3, x: 0, y: 2)
 
             if let card, isFaceUp {
-                VStack(spacing: 2) {
+                VStack(spacing: 1) {
                     Text(card.rank.label)
-                        .font(.system(size: width * 0.34, weight: .bold, design: .rounded))
+                        .font(Frontier.Font.bodyBold(width * 0.34))
                     Text(card.suit.symbol)
-                        .font(.system(size: width * 0.34))
+                        .font(.system(size: width * 0.28))
                 }
-                .foregroundColor(card.suit.isRed ? .red : .black)
+                .foregroundColor(card.suit.isRed ? Frontier.Color.rustDark : Frontier.Color.ink)
             } else {
                 CardBackView(width: width)
             }
@@ -39,30 +44,31 @@ struct CardView: View {
 struct CardBackView: View {
     var width: CGFloat = 56
     var body: some View {
-        RoundedRectangle(cornerRadius: width * 0.14, style: .continuous)
+        RoundedRectangle(cornerRadius: width * 0.1, style: .continuous)
             .fill(
-                LinearGradient(colors: [Color(red: 0.1, green: 0.25, blue: 0.55), Color(red: 0.05, green: 0.12, blue: 0.3)],
+                LinearGradient(colors: [Frontier.Color.wood700, Frontier.Color.wood950],
                                startPoint: .topLeading, endPoint: .bottomTrailing)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: width * 0.14, style: .continuous)
-                    .strokeBorder(Color.white.opacity(0.5), lineWidth: 2)
-                    .padding(3)
+                RoundedRectangle(cornerRadius: width * 0.1, style: .continuous)
+                    .strokeBorder(Frontier.Color.brass.opacity(0.7), lineWidth: 1.5)
+                    .padding(2.5)
             )
             .overlay(
-                Image(systemName: "suit.spade.fill")
-                    .font(.system(size: width * 0.4))
-                    .foregroundColor(.white.opacity(0.25))
+                Text("★")
+                    .font(.system(size: width * 0.3))
+                    .foregroundColor(Frontier.Color.brass.opacity(0.55))
             )
-            .frame(width: width, height: width * 1.4)
+            .frame(width: width, height: width * 1.42)
     }
 }
 
 struct EmptyCardSlotView: View {
     var width: CGFloat = 56
     var body: some View {
-        RoundedRectangle(cornerRadius: width * 0.14, style: .continuous)
-            .stroke(Color.white.opacity(0.2), lineWidth: 1.5)
-            .frame(width: width, height: width * 1.4)
+        RoundedRectangle(cornerRadius: width * 0.1, style: .continuous)
+            .strokeBorder(style: StrokeStyle(lineWidth: 1.3, dash: [3, 3]))
+            .foregroundColor(Frontier.Color.paperLo.opacity(0.3))
+            .frame(width: width, height: width * 1.42)
     }
 }

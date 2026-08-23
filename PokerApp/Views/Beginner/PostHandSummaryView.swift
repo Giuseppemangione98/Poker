@@ -16,76 +16,86 @@ struct PostHandSummaryView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            VStack(spacing: 6) {
-                Text(humanWon ? "Hai vinto la mano! 🎉" : "Mano persa")
-                    .font(.title2.bold())
-                    .foregroundColor(humanWon ? .green : .white)
-                Text("Analisi delle tue decisioni")
-                    .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.6))
-            }
-            .padding(.top, 24)
-            .padding(.bottom, 12)
-
-            ScrollView {
-                VStack(spacing: 10) {
-                    if humanActions.isEmpty {
-                        Text("Non hai preso decisioni in questa mano.")
-                            .foregroundColor(.white.opacity(0.6))
-                            .padding()
+        ZStack {
+            ParchmentBackground()
+            VStack(spacing: 0) {
+                ZStack {
+                    VStack(spacing: 5) {
+                        Text(humanWon ? "Hai vinto la mano" : "Mano persa")
+                            .font(Frontier.Font.display(22))
+                            .foregroundColor(humanWon ? Frontier.Color.sageDark : Frontier.Color.rustDark)
+                        Text("ANALISI DELLE TUE DECISIONI")
+                            .font(Frontier.Font.stamp(10))
+                            .tracking(1.5)
+                            .foregroundColor(Frontier.Color.inkSoft)
                     }
-                    ForEach(humanActions) { record in
-                        analysisRow(record)
+                    if humanWon {
+                        Text("APPROVATO")
+                            .font(Frontier.Font.display(15))
+                            .foregroundColor(Frontier.Color.rustDark.opacity(0.4))
+                            .padding(.horizontal, 10).padding(.vertical, 2)
+                            .overlay(RoundedRectangle(cornerRadius: 4).stroke(Frontier.Color.rustDark.opacity(0.4), lineWidth: 2))
+                            .rotationEffect(.degrees(-8))
+                            .offset(x: 110, y: -6)
                     }
                 }
-                .padding(.horizontal)
-            }
+                .padding(.top, 26)
+                .padding(.bottom, 14)
 
-            Button {
-                HapticManager.shared.buttonTap()
-                onContinue()
-            } label: {
-                Text("Prossima mano")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Capsule().fill(Color.green))
-                    .foregroundColor(.white)
+                ScrollView {
+                    VStack(spacing: 10) {
+                        if humanActions.isEmpty {
+                            Text("Non hai preso decisioni in questa mano.")
+                                .font(Frontier.Font.body(13, italic: true))
+                                .foregroundColor(Frontier.Color.inkSoft)
+                                .padding()
+                        }
+                        ForEach(humanActions) { record in
+                            analysisRow(record)
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+
+                Button("Prossima mano") {
+                    HapticManager.shared.buttonTap()
+                    onContinue()
+                }
+                .buttonStyle(WaxSealButtonStyle(tint: Frontier.Color.sageDark))
+                .padding()
             }
-            .padding()
         }
-        .background(Color(red: 0.06, green: 0.09, blue: 0.13).ignoresSafeArea())
     }
 
     private func analysisRow(_ record: HandActionRecord) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Text(record.stage.localizedName)
-                    .font(.caption.bold())
-                    .foregroundColor(.white.opacity(0.5))
+                Text(record.stage.localizedName.uppercased())
+                    .font(Frontier.Font.stamp(10))
+                    .foregroundColor(Frontier.Color.inkSoft)
                 Spacer()
                 Text(record.actionLabel)
-                    .font(.subheadline.bold())
-                    .foregroundColor(.white)
+                    .font(Frontier.Font.bodyBold(14))
+                    .foregroundColor(Frontier.Color.ink)
             }
             if let equity = record.equityAtDecision {
-                HStack(spacing: 12) {
-                    Label("Equity \(Int((equity * 100).rounded()))%", systemImage: "chart.pie.fill")
+                HStack(spacing: 14) {
+                    Text("EQUITY \(Int((equity * 100).rounded()))%")
                     if let odds = record.potOddsAtDecision {
-                        Label("Pot odds \(Int((odds * 100).rounded()))%", systemImage: "divide.circle.fill")
+                        Text("POT ODDS \(Int((odds * 100).rounded()))%")
                     }
                 }
-                .font(.caption)
-                .foregroundColor(.yellow)
+                .font(Frontier.Font.stamp(10))
+                .foregroundColor(Frontier.Color.rustDark)
 
                 Text(evaluation(equity: equity, potOdds: record.potOddsAtDecision, action: record.action))
-                    .font(.caption)
-                    .foregroundColor(.white.opacity(0.75))
+                    .font(Frontier.Font.body(12, italic: true))
+                    .foregroundColor(Frontier.Color.inkSoft)
             }
         }
         .padding(10)
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color.white.opacity(0.06)))
+        .background(RoundedRectangle(cornerRadius: 3).fill(Frontier.Color.ink.opacity(0.04)))
+        .overlay(RoundedRectangle(cornerRadius: 3).strokeBorder(style: StrokeStyle(lineWidth: 1, dash: [3, 3])).foregroundColor(Frontier.Color.ink.opacity(0.25)))
     }
 
     private func evaluation(equity: Double, potOdds: Double?, action: PlayerAction) -> String {

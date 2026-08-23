@@ -27,5 +27,13 @@
 	<true/>
 	<key>UIStatusBarHidden</key>
 	<true/>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Rye-Regular.ttf</string>
+		<string>SpecialElite-Regular.ttf</string>
+		<string>Vollkorn-Regular.ttf</string>
+		<string>Vollkorn-Bold.ttf</string>
+		<string>Vollkorn-Italic.ttf</string>
+	</array>
 </dict>
 </plist>

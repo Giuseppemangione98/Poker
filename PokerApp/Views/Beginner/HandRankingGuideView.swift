@@ -25,35 +25,43 @@ enum HandRankingCatalog {
 
 struct HandRankingGuideView: View {
     var body: some View {
-        ScrollView {
-            VStack(spacing: 14) {
-                ForEach(Array(HandRankingCatalog.examples.enumerated()), id: \.element.id) { index, example in
-                    HStack(spacing: 12) {
-                        Text("\(index + 1)")
-                            .font(.headline)
-                            .foregroundColor(.white.opacity(0.5))
-                            .frame(width: 22)
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(example.category.localizedName)
-                                .font(.headline)
-                                .foregroundColor(.white)
-                            Text(example.description)
-                                .font(.caption)
-                                .foregroundColor(.white.opacity(0.7))
-                        }
-                        Spacer()
-                        HStack(spacing: -10) {
-                            ForEach(example.cards) { card in
-                                CardView(card: card, width: 30)
+        ZStack {
+            ParchmentBackground()
+            ScrollView {
+                VStack(spacing: 12) {
+                    Text("Classifica delle Mani")
+                        .font(Frontier.Font.display(24))
+                        .foregroundColor(Frontier.Color.ink)
+                        .padding(.top, 10)
+
+                    ForEach(Array(HandRankingCatalog.examples.enumerated()), id: \.element.id) { index, example in
+                        HStack(spacing: 12) {
+                            Text("\(index + 1)")
+                                .font(Frontier.Font.stamp(14))
+                                .foregroundColor(Frontier.Color.rustDark)
+                                .frame(width: 20)
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(example.category.localizedName)
+                                    .font(Frontier.Font.bodyBold(15))
+                                    .foregroundColor(Frontier.Color.ink)
+                                Text(example.description)
+                                    .font(Frontier.Font.body(11, italic: true))
+                                    .foregroundColor(Frontier.Color.inkSoft)
+                            }
+                            Spacer()
+                            HStack(spacing: -10) {
+                                ForEach(example.cards) { card in
+                                    CardView(card: card, width: 28)
+                                }
                             }
                         }
+                        .padding(10)
+                        .background(RoundedRectangle(cornerRadius: 3).fill(Frontier.Color.ink.opacity(0.04)))
+                        .overlay(RoundedRectangle(cornerRadius: 3).stroke(Frontier.Color.ink.opacity(0.15), lineWidth: 0.8))
                     }
-                    .padding(10)
-                    .background(RoundedRectangle(cornerRadius: 14).fill(Color.white.opacity(0.06)))
                 }
+                .padding()
             }
-            .padding()
         }
-        .background(Color(red: 0.05, green: 0.08, blue: 0.12).ignoresSafeArea())
     }
 }

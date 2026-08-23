@@ -16,6 +16,8 @@ targets:
     deploymentTarget: "16.0"
     sources:
       - path: PokerApp
+        excludes:
+          - "Resources/Info.plist"
     info:
       path: PokerApp/Resources/Info.plist
       properties:
