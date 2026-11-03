@@ -367,6 +367,9 @@ async function refreshPush() {
 }
 
 /* ================= boot ================= */
+if (location.hostname === 'rawcdn.githack.com') {
+  document.body.insertAdjacentHTML('afterbegin', `<a href="https://giuseppemangione98.github.io/Poker/" style="display:block;position:relative;z-index:50;margin:calc(env(safe-area-inset-top) + 8px) 16px 0;padding:12px 14px;border-radius:14px;background:var(--accent);color:#fff;font-size:14px;font-weight:600;line-height:1.35">Nuovo indirizzo dell’app: tocca qui, poi Condividi → Aggiungi alla schermata Home ed elimina questa icona.</a>`);
+}
 buildMap();
 setTab(app.tab);
 renderResults(); renderNews();
