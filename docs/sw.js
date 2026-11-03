@@ -1,5 +1,5 @@
 // Service worker: offline shell + Web Push notifications.
-const CACHE = 'midterm-v3';
+const CACHE = 'midterm-v4';
 const SHELL = ['index.html', 'manifest.json'];
 
 self.addEventListener('install', e => {
@@ -12,7 +12,8 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET' || url.origin !== location.origin || url.pathname.includes('/data/')) return;
-  e.respondWith(fetch(e.request).then(r => {
+  // cache: 'no-cache' revalidates with the server, so a new version shows up on the next open
+  e.respondWith(fetch(e.request, { cache: 'no-cache' }).then(r => {
     const copy = r.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); return r;
   }).catch(() => caches.match(e.request).then(r => r || caches.match('index.html'))));
 });

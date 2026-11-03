@@ -384,10 +384,14 @@ $('#back').addEventListener('click', () => history.back());
 addEventListener('popstate', closeStory);
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (!$('#story').hidden) history.back(); else if (!$('#sheet').hidden) closeSheet(); } });
 $('#bell').addEventListener('click', enablePush);
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+if ('serviceWorker' in navigator) {
+  const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.register('sw.js').then(r => r.update()).catch(() => {});
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (hadController && !sessionStorage.getItem('mt-reloaded')) { sessionStorage.setItem('mt-reloaded', '1'); location.reload(); } });
+}
 
 loadResults(); loadNews(); refreshPush();
-setInterval(() => !document.hidden && loadResults(), 45e3);
+setInterval(() => !document.hidden && loadResults(), 30e3);
 setInterval(() => !document.hidden && loadNews(), 4 * 60e3);
 setInterval(() => { renderLive(); if (app.news) $('#news-upd span').textContent = ago(app.news.generatedAt); }, 30e3);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { loadResults(); loadNews(); } });
