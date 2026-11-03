@@ -5,7 +5,7 @@
 import fs from 'node:fs';
 import { execSync } from 'node:child_process';
 import { fetchFeeds, buildSnapshot, STATE_NAMES } from '../../docs/app/nyt.js';
-import { SITE_URL, NTFY_INBOX, NTFY_ALERTS } from '../../docs/app/config.js';
+import { SITE_URL, NTFY_INBOX, NTFY_ALERTS, BRANCH } from '../../docs/app/config.js';
 import { buildNews } from './news.mjs';
 import { Push } from './push.mjs';
 
@@ -123,12 +123,13 @@ function git(msg) {
     execSync(`git commit -q -m "${msg}"`, { timeout: 60000, cwd: ROOT });
     for (let i = 0; i < 4; i++) {
       try {
-        execSync('git pull -q --rebase -X theirs origin HEAD', { timeout: 60000, cwd: ROOT, stdio: 'ignore' });
-        execSync('git push -q origin HEAD', { timeout: 60000, cwd: ROOT, stdio: 'ignore' });
+        execSync(`git pull -q --rebase -X theirs origin ${BRANCH}`, { timeout: 60000, cwd: ROOT, stdio: 'ignore' });
+        execSync(`git push -q origin HEAD:${BRANCH}`, { timeout: 60000, cwd: ROOT, stdio: 'ignore' });
         return;
       } catch { execSync(`sleep ${2 ** (i + 1)}`); }
     }
     console.log('git push failed');
+    try { execSync(`git rebase --abort`, { timeout: 20000, cwd: ROOT, stdio: 'ignore' }); } catch {}
   } catch (e) { console.log('git error', e.message); }
 }
 

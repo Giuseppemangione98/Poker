@@ -163,15 +163,17 @@ function renderBalance() {
   const holdNote = app.mode === 'H' ? '435 seggi in palio' : `${inPlay} in palio · ${t.total - inPlay} non al voto`;
   $('#balance').innerHTML = `
     <div class="balance-top">
-      <div class="side d"><span class="n tnum">${t.won.D}</span><span class="l">Democratici${t.lead.D ? ` · <b>+${t.lead.D}</b> in testa` : ''}</span></div>
-      <div class="mid">${decided ? `<span class="won ${decided}">Maggioranza ${decided === 'D' ? 'Dem' : 'Rep'}</span>` : `<span class="need">${t.needed} per vincere</span>`}</div>
-      <div class="side r"><span class="n tnum">${t.won.R}</span><span class="l">${t.lead.R ? `<b>+${t.lead.R}</b> in testa · ` : ''}Repubblicani</span></div>
+      <div class="side d"><span class="n tnum">${t.won.D}</span><span class="l">Democratici</span></div>
+      ${decided ? `<div class="mid"><span class="won ${decided}">Maggioranza ${decided === 'D' ? 'Dem' : 'Rep'}</span></div>` : ''}
+      <div class="side r"><span class="n tnum">${t.won.R}</span><span class="l">Repubblicani</span></div>
     </div>
     <div class="track-wrap"><div class="track" role="img" aria-label="${MODE[app.mode]}: Democratici ${t.won.D}, Repubblicani ${t.won.R}, maggioranza ${t.needed}">
       <i class="dw" style="width:${pct(t.won.D)}"></i><i class="dl" style="width:${pct(t.lead.D)}"></i><i class="sp"></i>
       <i class="ow" style="width:${pct(t.won.O + t.lead.O)}"></i><i class="rl" style="width:${pct(t.lead.R)}"></i><i class="rw" style="width:${pct(t.won.R)}"></i>
     </div></div>
-    <div class="foot-note"><span>${holdNote}</span><span>${t.won.O ? `Altri ${t.won.O}` : MODE[app.mode]}</span></div>
+    <div class="need-line"><b class="tnum">${t.needed}</b> per la maggioranza</div>
+    ${t.lead.D || t.lead.R || t.lead.O ? `<div class="leads"><span class="lead-chip d"><i></i>+${t.lead.D} in testa</span><span class="lead-chip r">+${t.lead.R} in testa<i></i></span></div>` : ''}
+    <div class="foot-note"><span>${holdNote}</span><span>${t.won.O ? `Altri ${t.won.O}` : ''}</span></div>
     ${counting ? '' : `<p class="hint">${app.mode === 'H' ? 'Tutti i 435 seggi sono al voto: si parte da 0–0.' : `I numeri di partenza sono i seggi <b>non al voto</b> quest’anno (D ${base.D} · R ${base.R}).`} Lo spoglio inizia alle <b>00:00 ora italiana</b>, quando chiudono i primi seggi (Indiana e Kentucky); la mappa si colorerà stato per stato.</p>`}`;
 }
 
