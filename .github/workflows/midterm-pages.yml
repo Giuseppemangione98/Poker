@@ -1,0 +1,31 @@
+# Publishes docs/ (the web app) to the gh-pages branch, served by GitHub Pages at
+# https://giuseppemangione98.github.io/Poker/ . Live data is read from this branch directly.
+name: midterm-pages
+on:
+  push:
+    branches: [claude/upbeat-gates-8xs1mk]
+    paths: ['docs/**', '!docs/data/**']
+permissions:
+  contents: write
+concurrency:
+  group: midterm-pages
+  cancel-in-progress: true
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Push docs/ to gh-pages
+        run: |
+          git config user.name "midterm-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin gh-pages
+          git worktree add ../site origin/gh-pages
+          cd ../site
+          git rm -rq --ignore-unmatch .
+          cp -r "$GITHUB_WORKSPACE/docs/." .
+          touch .nojekyll
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -m "Publish web app from ${GITHUB_SHA::7}"
+          git push origin HEAD:gh-pages
