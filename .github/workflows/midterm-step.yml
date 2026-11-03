@@ -1,0 +1,59 @@
+# One ~6h slice of the election-night updater (called by midterm-live.yml).
+name: midterm-step
+on:
+  workflow_call:
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install updater
+        working-directory: scripts/midterm
+        run: npm ci --omit=dev --no-audit --no-fund
+
+      # VAPID keys for Web Push live only in the Actions cache (never in the repo).
+      - name: Restore VAPID keys
+        id: vapid
+        uses: actions/cache/restore@v4
+        with:
+          path: .vapid
+          key: midterm-vapid-v1
+
+      - name: Generate VAPID keys (first run only)
+        if: steps.vapid.outputs.cache-hit != 'true'
+        working-directory: scripts/midterm
+        run: |
+          mkdir -p ../../.vapid
+          node -e "const wp=require('web-push');require('fs').writeFileSync('../../.vapid/keys.json',JSON.stringify(wp.generateVAPIDKeys()))"
+
+      - name: Save VAPID keys
+        if: steps.vapid.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .vapid
+          key: midterm-vapid-v1
+
+      - name: Run live updater
+        working-directory: scripts/midterm
+        env:
+          LOOP_MINUTES: '340'
+        run: |
+          git config user.name "midterm-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          export VAPID_PUBLIC=$(node -p "require('../../.vapid/keys.json').publicKey")
+          export VAPID_PRIVATE=$(node -p "require('../../.vapid/keys.json').privateKey")
+          echo "::add-mask::$VAPID_PRIVATE"
+          node loop.mjs

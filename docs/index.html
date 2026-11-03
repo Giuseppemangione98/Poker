@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Midterm Live</title>
+  <meta name="description" content="Risultati in tempo reale delle elezioni di midterm USA 2026, mappa degli stati, notifiche e riassunto delle notizie.">
+  <meta name="theme-color" content="#f6f5f2" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#111214" media="(prefers-color-scheme: dark)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Midterm">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <h1>Midterm <span>2026</span></h1>
+      <p id="status" class="status"><i class="dot"></i><span>Connessione…</span></p>
+    </div>
+    <button id="notifyBtn" class="icon-btn" aria-label="Attiva notifiche">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6V11a7 7 0 0 0-5.5-6.84V3.5a1.5 1.5 0 0 0-3 0v.66A7 7 0 0 0 5 11v5l-2 2v1h18v-1l-2-2Z"/></svg>
+    </button>
+  </header>
+
+  <main>
+    <section class="control" id="control" aria-label="Controllo delle camere"></section>
+
+    <section class="card map-card">
+      <div class="seg" role="tablist" aria-label="Tipo di elezione">
+        <button role="tab" data-mode="S" aria-selected="true">Senato</button>
+        <button role="tab" data-mode="H" aria-selected="false">Camera</button>
+        <button role="tab" data-mode="G" aria-selected="false">Governatori</button>
+      </div>
+      <div class="map-wrap"><svg id="map" viewBox="0 0 975 610" role="img" aria-label="Mappa degli Stati Uniti"></svg></div>
+      <ul class="legend" aria-hidden="true">
+        <li><i class="sw d2"></i>Dem. eletto</li>
+        <li><i class="sw d1"></i>Dem. in testa</li>
+        <li><i class="sw r1"></i>Rep. in testa</li>
+        <li><i class="sw r2"></i>Rep. eletto</li>
+        <li><i class="sw wait"></i>In attesa</li>
+        <li><i class="sw none"></i>Nessuna gara</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <div class="card-h"><h2>Da seguire</h2><span id="watchSub" class="muted"></span></div>
+      <ul id="watch" class="races"></ul>
+    </section>
+
+    <section class="card" id="news">
+      <div class="card-h"><h2>Notizie</h2><span id="newsSub" class="muted"></span></div>
+      <div id="stories" class="stories"><p class="muted">Caricamento notizie…</p></div>
+      <h3 class="sub-h">Da leggere</h3>
+      <ul id="reads" class="reads"></ul>
+    </section>
+
+    <p class="foot">Risultati: Associated Press tramite i file pubblici del New York Times. Notizie: feed RSS di NPR, Politico, The Hill, NYT, BBC, CBS, Fox, ABC, Guardian e Google News, riassunte e tradotte automaticamente.</p>
+  </main>
+
+  <div id="sheet" class="sheet" hidden>
+    <div class="sheet-bg" data-close></div>
+    <div class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+      <div class="grab"></div>
+      <div class="sheet-h"><h2 id="sheetTitle"></h2><button class="icon-btn" data-close aria-label="Chiudi">✕</button></div>
+      <div id="sheetBody"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

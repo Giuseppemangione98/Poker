@@ -6,3 +6,4 @@ build/
 *.ipa
 *.xcarchive
 .swiftpm/
+node_modules/

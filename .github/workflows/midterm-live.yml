@@ -1,0 +1,120 @@
+# Election-night live updater for the Midterm 2026 web app (docs/).
+# Starts on every push to this branch and chains ~6h slices for ~5 days
+# (cron and workflow_dispatch only work on the default branch, so we chain jobs).
+# To restart it later: Actions > midterm-live > Re-run all jobs.
+name: midterm-live
+on:
+  push:
+    branches: [claude/upbeat-gates-8xs1mk]
+    paths:
+      - 'scripts/midterm/*.mjs'
+      - 'scripts/midterm/package*.json'
+      - 'docs/nyt.js'
+      - 'docs/config.js'
+      - '.github/workflows/midterm-*.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: midterm-live
+  cancel-in-progress: true
+
+jobs:
+  slice01:
+    uses: ./.github/workflows/midterm-step.yml
+
+  slice02:
+    needs: slice01
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/midterm-step.yml
+
+  slice03:
+    needs: slice02
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/midterm-step.yml
+
+  slice04:
+    needs: slice03
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/midterm-step.yml
+
+  slice05:
+    needs: slice04
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/midterm-step.yml
+
+  slice06:
+    needs: slice05
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/midterm-step.yml
+
+  slice07:
+    needs: slice06
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/midterm-step.yml
+
+  slice08:
+    needs: slice07
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/midterm-step.yml
+
+  slice09:
+    needs: slice08
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/midterm-step.yml
+
+  slice10:
+    needs: slice09
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/midterm-step.yml
+
+  slice11:
+    needs: slice10
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/midterm-step.yml
+
+  slice12:
+    needs: slice11
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/midterm-step.yml
+
+  slice13:
+    needs: slice12
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/midterm-step.yml
+
+  slice14:
+    needs: slice13
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/midterm-step.yml
+
+  slice15:
+    needs: slice14
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/midterm-step.yml
+
+  slice16:
+    needs: slice15
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/midterm-step.yml
+
+  slice17:
+    needs: slice16
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/midterm-step.yml
+
+  slice18:
+    needs: slice17
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/midterm-step.yml
+
+  slice19:
+    needs: slice18
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/midterm-step.yml
+
+  slice20:
+    needs: slice19
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/midterm-step.yml
