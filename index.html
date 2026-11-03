@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Midterm Live</title>
+  <meta name="description" content="Risultati in tempo reale delle elezioni di midterm USA 2026, mappa degli stati, notifiche e notizie.">
+  <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Midterm">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="https://raw.githubusercontent.com/Giuseppemangione98/Poker/claude/upbeat-gates-8xs1mk/docs/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/Giuseppemangione98/Poker/claude/upbeat-gates-8xs1mk/docs/icons/apple-touch-icon.png">
+  <style>
+    html, body { margin: 0; background: #f2f2f7; }
+    @media (prefers-color-scheme: dark) { html, body { background: #000; } }
+    #boot { position: fixed; inset: 0; display: grid; place-items: center; font: 600 15px -apple-system, system-ui, sans-serif; color: #8e8e93; }
+  </style>
+</head>
+<body>
+  <div id="boot">Midterm 2026</div>
+  <!--
+    Stable shell. The app itself (docs/app/) is loaded from the latest commit,
+    so the icon on the Home Screen keeps updating without being re-added.
+  -->
+  <script>
+  (function () {
+    var REPO = 'Giuseppemangione98/Poker', BRANCH = 'claude/upbeat-gates-8xs1mk', KEY = 'mt-app-sha';
+    var onCdn = location.hostname === 'rawcdn.githack.com';
+    function cached() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
+    function remember(s) { try { localStorage.setItem(KEY, s); } catch (e) {} }
+    function start(base) {
+      window.__APP_BASE__ = base;
+      var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = base + 'style.css';
+      document.head.appendChild(l);
+      import(base + 'app.js').catch(function (e) { console.error('app load failed', e); if (base !== './app/') start('./app/'); });
+    }
+    if (!onCdn) return start('./app/');
+    var done = false;
+    function go(sha) { if (done) return; done = true; start(sha ? 'https://rawcdn.githack.com/' + REPO + '/' + sha + '/docs/app/' : './app/'); }
+    var t = setTimeout(function () { go(cached()); }, 2500);
+    fetch('https://api.github.com/repos/' + REPO + '/commits?sha=' + encodeURIComponent(BRANCH) + '&path=docs/app&per_page=1', { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { var s = j && j[0] && j[0].sha; if (s) remember(s); clearTimeout(t); go(s || cached()); })
+      .catch(function () { clearTimeout(t); go(cached()); });
+  })();
+  </script>
+</body>
+</html>
