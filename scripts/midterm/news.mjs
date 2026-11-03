@@ -22,6 +22,7 @@ const STOP = new Set('the a an and or of to in on for with at by from as is are 
 const UA = { 'user-agent': 'Mozilla/5.0 (compatible; MidtermLiveBot/1.0)', accept: 'application/rss+xml, application/xml, text/xml, */*' };
 
 const stripHtml = s => String(s || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#0?39;|&apos;|&#8217;/g, "'").replace(/&#8220;|&#8221;/g, '"').replace(/&#821[12];/g, '–').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ').trim();
+const GENERIC = new Set('election elections midterm midterms 2026 live results result senate house race races vote votes voters voting polls day results: governor congress control what know need here'.split(' '));
 const tokens = s => new Set(String(s).toLowerCase().replace(/[^a-z0-9' ]/g, ' ').split(/\s+/).filter(w => w.length > 2 && !STOP.has(w)).map(w => w.replace(/'s$/, '')));
 
 function pickImage(it) {
@@ -76,7 +77,7 @@ function cluster(articles) {
     let best = null, bestScore = 0;
     for (const c of clusters) {
       let inter = 0;
-      for (const t of a.tok) if (c.tok.has(t)) inter++;
+      for (const t of a.tok) if (c.tok.has(t) && !GENERIC.has(t)) inter++;
       const score = inter / Math.min(a.tok.size || 1, c.tok.size || 1);
       if (inter >= 3 && score > bestScore) { best = c; bestScore = score; }
     }
@@ -112,22 +113,47 @@ function summarize(items) {
 }
 
 const cache = new Map();
+let failStreak = 0;
+const sleepMs = ms => new Promise(r => setTimeout(r, ms));
+const TRANSLATORS = [
+  async q => {
+    const r = await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=it&dt=t&q=' + encodeURIComponent(q), { headers: { 'user-agent': UA['user-agent'] }, signal: AbortSignal.timeout(10000) });
+    if (!r.ok) throw new Error('gtx ' + r.status);
+    return ((await r.json())[0] || []).map(x => x[0]).join('');
+  },
+  async q => {
+    const r = await fetch('https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl=en&tl=it&q=' + encodeURIComponent(q), { headers: { 'user-agent': UA['user-agent'] }, signal: AbortSignal.timeout(10000) });
+    if (!r.ok) throw new Error('c5 ' + r.status);
+    const j = await r.json();
+    const v = Array.isArray(j) ? (Array.isArray(j[0]) ? j[0][0] : j[0]) : (j.sentences || []).map(x => x.trans).join('');
+    return typeof v === 'string' ? v : '';
+  },
+  async q => {
+    const r = await fetch('https://api.mymemory.translated.net/get?langpair=en|it&q=' + encodeURIComponent(q.slice(0, 480)), { signal: AbortSignal.timeout(10000) });
+    if (!r.ok) throw new Error('mm ' + r.status);
+    const j = await r.json();
+    if (j.responseStatus !== 200 && j.responseStatus !== '200') throw new Error('mm ' + j.responseStatus);
+    return j.responseData && j.responseData.translatedText || '';
+  },
+];
 async function translate(text) {
   if (!text) return text;
   if (cache.has(text)) return cache.get(text);
-  try {
-    const u = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=it&dt=t&q=' + encodeURIComponent(text.slice(0, 1800));
-    await new Promise(r => setTimeout(r, 250));
-    const r = await fetch(u, { headers: { 'user-agent': UA['user-agent'] }, signal: AbortSignal.timeout(10000) });
-    if (!r.ok) throw new Error(r.status);
-    const j = await r.json();
-    const out = (j[0] || []).map(x => x[0]).join('');
-    if (out) { cache.set(text, out); return out; }
-  } catch {}
+  if (failStreak > 6) return text; // translators unavailable this cycle
+  for (const tr of TRANSLATORS) {
+    try {
+      await sleepMs(200);
+      const out = await tr(text.slice(0, 1800));
+      if (out && out.trim() && out.trim() !== text.trim()) { cache.set(text, out); failStreak = 0; return out; }
+    } catch (e) { if (!translate.logged) { console.log('translate:', e.message); } }
+  }
+  translate.logged = true;
+  failStreak++;
   return text;
 }
 
 export async function buildNews(prev) {
+  failStreak = 0; translate.logged = false;
   if (prev?.translations) for (const [k, v] of Object.entries(prev.translations)) cache.set(k, v);
   const all = (await Promise.all(FEEDS.map(fetchFeed))).flat();
   const now = Date.now();
