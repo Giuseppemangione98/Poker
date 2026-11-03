@@ -17,6 +17,7 @@ const SRC_COLORS = ['#e5383b', '#2563eb', '#0f9d58', '#f59e0b', '#8b5cf6', '#0ea
 
 const $ = s => document.querySelector(s);
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+const pic = (u, cls) => `<div class="${cls}"><img src="${esc(u)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.remove()"></div>`;
 const cssUrl = u => `url("${String(u).replace(/["\\\n]/g, '')}")`;
 const nf = new Intl.NumberFormat('it-IT');
 const hhmm = ts => new Date(ts).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
@@ -41,6 +42,7 @@ const ICON = {
 };
 
 /* ================= layout ================= */
+{ const m = document.createElement('meta'); m.name = 'referrer'; m.content = 'no-referrer'; document.head.prepend(m); }
 document.body.insertAdjacentHTML('beforeend', `
   <section class="view" id="v-results">
     <header class="lt-head">
@@ -141,7 +143,8 @@ function renderLive() {
   const el = $('#live'), txt = el.querySelector('span');
   const counted = app.snap ? app.snap.control.S.counted + app.snap.control.H.counted + app.snap.control.G.counted : 0;
   el.className = 'live' + (app.snap && counted ? (Date.now() - app.lastOk < 5 * 60e3 ? ' on' : ' stale') : '');
-  txt.textContent = !app.snap ? 'In attesa' : counted ? `Live · ${hhmm(app.snap.updated || app.snap.fetchedAt)}` : 'Seggi aperti';
+  const first = Date.UTC(2026, 10, 3, 23, 0), left = Math.round((first - Date.now()) / 60000);
+  txt.textContent = counted ? `Live · ${hhmm(app.snap.updated || app.snap.fetchedAt)}` : left > 0 ? `Spoglio tra ${left >= 60 ? Math.floor(left / 60) + ' h ' : ''}${left % 60} min` : 'Spoglio in arrivo';
 }
 
 function renderSeg() {
@@ -155,6 +158,8 @@ function renderBalance() {
   const pct = v => (v / t.total * 100).toFixed(2) + '%';
   const decided = t.won.D >= t.needed ? 'D' : t.won.R >= t.needed ? 'R' : null;
   const inPlay = app.mode === 'H' ? 435 : (t.races || FALLBACK[app.mode].races);
+  const counting = app.snap && app.snap.control[app.mode].counted > 0;
+  const base = (app.snap && app.snap.control[app.mode].base) || FALLBACK[app.mode].won;
   const holdNote = app.mode === 'H' ? '435 seggi in palio' : `${inPlay} in palio · ${t.total - inPlay} non al voto`;
   $('#balance').innerHTML = `
     <div class="balance-top">
@@ -166,7 +171,8 @@ function renderBalance() {
       <i class="dw" style="width:${pct(t.won.D)}"></i><i class="dl" style="width:${pct(t.lead.D)}"></i><i class="sp"></i>
       <i class="ow" style="width:${pct(t.won.O + t.lead.O)}"></i><i class="rl" style="width:${pct(t.lead.R)}"></i><i class="rw" style="width:${pct(t.won.R)}"></i>
     </div></div>
-    <div class="foot-note"><span>${holdNote}</span><span>${t.won.O ? `Altri ${t.won.O}` : MODE[app.mode]}</span></div>`;
+    <div class="foot-note"><span>${holdNote}</span><span>${t.won.O ? `Altri ${t.won.O}` : MODE[app.mode]}</span></div>
+    ${counting ? '' : `<p class="hint">${app.mode === 'H' ? 'Tutti i 435 seggi sono al voto: si parte da 0–0.' : `I numeri di partenza sono i seggi <b>non al voto</b> quest’anno (D ${base.D} · R ${base.R}).`} Lo spoglio inizia alle <b>00:00 ora italiana</b>, quando chiudono i primi seggi (Indiana e Kentucky); la mappa si colorerà stato per stato.</p>`}`;
 }
 
 function buildMap() {
@@ -287,10 +293,10 @@ function renderNews() {
   const item = (s, i) => `<button class="item${s.img ? '' : ' noimg'}" data-story="${i}">
       <div><span class="src">${esc(s.source || (s.articles[0] && s.articles[0].source) || '')}</span><h4>${esc(s.title)}</h4>
       <div class="meta-line">${srcStack(s.articles)}<span>${s.sourcesCount} ${s.sourcesCount === 1 ? 'fonte' : 'fonti'} · ${ago(s.ts)}</span></div></div>
-      ${s.img ? `<div class="thumb" style="background-image:${cssUrl(s.img)}"></div>` : ''}</button>`;
+      ${s.img ? pic(s.img, 'thumb') : ''}</button>`;
   body.innerHTML = `
     <button class="hero" data-story="0" style="width:100%;text-align:left">
-      ${hero.img ? `<div class="img" style="background-image:${cssUrl(hero.img)}"></div>` : ''}
+      ${hero.img ? pic(hero.img, 'img') : ''}
       <div class="body"><span class="src">In primo piano</span><h3>${esc(hero.title)}</h3>${hero.summary ? `<p>${esc(hero.summary)}</p>` : ''}
         <div class="meta-line">${srcStack(hero.articles)}<span>${hero.sourcesCount} fonti · ${ago(hero.ts)}</span></div></div>
     </button>
@@ -298,14 +304,14 @@ function renderNews() {
     <div class="feed">${rest.slice(0, 7).map((s, i) => item(s, i + 1)).join('')}</div>
     ${n.reads && n.reads.length ? `<div class="sec-h"><h2>Da leggere</h2><span>Scelti per te</span></div>
     <div class="carousel">${n.reads.map(a => `<a class="tile" href="${esc(a.link)}" target="_blank" rel="noopener">
-        ${a.img ? `<div class="img" style="background-image:${cssUrl(a.img)}"></div>` : `<div class="img ph">${esc(a.source)}</div>`}
+        ${a.img ? pic(a.img, 'img') : `<div class="img ph">${esc(a.source)}</div>`}
         <div class="body"><span class="src">${esc(a.source)}</span><h4>${esc(a.title)}</h4><div class="meta-line"><span>${ago(a.ts)}</span></div></div></a>`).join('')}</div>` : ''}
     ${rest.length > 7 ? `<div class="sec-h"><h2>Altre storie</h2><span></span></div><div class="feed">${rest.slice(7).map((s, i) => item(s, i + 8)).join('')}</div>` : ''}`;
 }
 function openStory(i) {
   const s = app.news && app.news.stories[i]; if (!s) return;
   $('#story-body').innerHTML = `
-    ${s.img ? `<div class="cover" style="background-image:${cssUrl(s.img)}"></div>` : ''}
+    ${s.img ? pic(s.img, 'cover') : ''}
     <span class="src">${esc(s.source || '')}</span>
     <h1>${esc(s.title)}</h1>
     <div class="meta-line">${srcStack(s.articles)}<span>${s.sourcesCount} ${s.sourcesCount === 1 ? 'fonte' : 'fonti'} · aggiornato ${ago(s.ts)}</span></div>
