@@ -1,16 +1,19 @@
-# Checks that the app is reachable through the githack CDN at this commit.
+# Checks that the published web app is reachable on GitHub Pages.
 name: midterm-check
 on:
   push:
     branches: [claude/upbeat-gates-8xs1mk]
-    paths: ['.github/workflows/midterm-check.yml', 'docs/*.html', 'docs/*.js', 'docs/*.json', 'docs/*.css']
+    paths: ['.github/workflows/midterm-check.yml']
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          base="https://rawcdn.githack.com/Giuseppemangione98/Poker/${{ github.sha }}/docs"
-          echo "APP URL: $base/index.html"
-          for f in index.html app.js nyt.js config.js states.js style.css manifest.json sw.js; do
+          base="https://giuseppemangione98.github.io/Poker"
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "$base/index.html"); echo "try $i: $code"
+            [ "$code" = 200 ] && break; sleep 30
+          done
+          for f in "" index.html app/app.js app/style.css app/nyt.js app/states.js app/config.js manifest.json sw.js icons/icon-192.png; do
             curl -sS -o /dev/null -w "$f %{http_code} %{content_type}\n" "$base/$f" || true
           done
