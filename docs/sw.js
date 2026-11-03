@@ -1,6 +1,6 @@
 // Service worker: offline shell + Web Push notifications.
-const CACHE = 'midterm-v2';
-const SHELL = ['index.html', 'style.css', 'app.js', 'nyt.js', 'states.js', 'config.js', 'manifest.json'];
+const CACHE = 'midterm-v3';
+const SHELL = ['index.html', 'manifest.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));

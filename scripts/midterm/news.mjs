@@ -24,6 +24,27 @@ const UA = { 'user-agent': 'Mozilla/5.0 (compatible; MidtermLiveBot/1.0)', accep
 const stripHtml = s => String(s || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#0?39;|&apos;|&#8217;/g, "'").replace(/&#8220;|&#8221;/g, '"').replace(/&#821[12];/g, '–').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ').trim();
 const tokens = s => new Set(String(s).toLowerCase().replace(/[^a-z0-9' ]/g, ' ').split(/\s+/).filter(w => w.length > 2 && !STOP.has(w)).map(w => w.replace(/'s$/, '')));
 
+function pickImage(it) {
+  const arr = v => (Array.isArray(v) ? v : v ? [v] : []);
+  const cands = [];
+  for (const m of arr(it['media:content'])) {
+    if (m && m['@_url'] && (!m['@_medium'] || m['@_medium'] === 'image') && !/\.(mp4|m3u8|mp3)/i.test(m['@_url'])) cands.push({ url: m['@_url'], w: Number(m['@_width']) || 0 });
+    for (const t of arr(m && m['media:thumbnail'])) if (t['@_url']) cands.push({ url: t['@_url'], w: Number(t['@_width']) || 0 });
+  }
+  for (const g of arr(it['media:group'])) for (const m of arr(g['media:content'])) if (m['@_url']) cands.push({ url: m['@_url'], w: Number(m['@_width']) || 0 });
+  for (const t of arr(it['media:thumbnail'])) if (t && t['@_url']) cands.push({ url: t['@_url'], w: Number(t['@_width']) || 0 });
+  for (const e of arr(it.enclosure)) if (e && e['@_url'] && /image/i.test(e['@_type'] || 'image')) cands.push({ url: e['@_url'], w: 0 });
+  const html = String(it['content:encoded'] || '') + String(it.description || '');
+  const m = html.match(/<img[^>]+src=["']([^"']+)["']/i);
+  if (m) cands.push({ url: m[1], w: 0 });
+  const ok = cands.filter(c => /^https:\/\//.test(c.url) && !/(pixel|tracking|feeds\.feedburner|1x1|spacer)/i.test(c.url));
+  ok.sort((a, b) => b.w - a.w);
+  let url = ok[0] ? ok[0].url.replace(/&amp;/g, '&') : null;
+  // BBC thumbnails are tiny: ask for a larger rendition
+  if (url) url = url.replace(/ichef\.bbci\.co\.uk\/(ace\/standard|news)\/\d+\//, 'ichef.bbci.co.uk/$1/976/');
+  return url;
+}
+
 async function fetchFeed([source, url]) {
   try {
     const r = await fetch(url, { headers: UA, signal: AbortSignal.timeout(15000) });
@@ -41,8 +62,9 @@ async function fetchFeed([source, url]) {
       }
       const link = typeof it.link === 'string' ? it.link : (it.link?.['@_href'] || it.guid?.['#text'] || it.guid || '');
       const desc = source === 'Google News' ? '' : stripHtml(it.description ?? it.summary ?? it['content:encoded'] ?? '');
+      const img = pickImage(it);
       const date = new Date(it.pubDate || it.published || it.updated || it['dc:date'] || Date.now());
-      return { title, link: String(link), desc: desc.slice(0, 600), source: src, ts: isNaN(date) ? Date.now() : date.getTime() };
+      return { title, link: String(link), desc: desc.slice(0, 600), source: src, img, ts: isNaN(date) ? Date.now() : date.getTime() };
     }).filter(a => a.title && a.link);
   } catch { return []; }
 }
@@ -58,9 +80,8 @@ function cluster(articles) {
       const score = inter / Math.min(a.tok.size || 1, c.tok.size || 1);
       if (inter >= 3 && score > bestScore) { best = c; bestScore = score; }
     }
-    if (best && bestScore >= 0.34) {
+    if (best && bestScore >= 0.4) {
       best.items.push(a);
-      for (const t of a.tok) best.tok.add(t);
     } else clusters.push({ items: [a], tok: new Set(a.tok) });
   }
   return clusters;
@@ -125,16 +146,19 @@ export async function buildNews(prev) {
   }).sort((a, b) => b.score - a.score);
 
   const stories = [];
-  for (const c of clusters.slice(0, 8)) {
+  for (const c of clusters.slice(0, 12)) {
     const lead = [...c.items].sort((a, b) => (b.desc.length > 0) - (a.desc.length > 0) || b.ts - a.ts)[0];
     const summaryEn = summarize(c.items);
+    const withImg = [...c.items].sort((a, b) => b.ts - a.ts).find(i => i.img);
     stories.push({
+      img: withImg ? withImg.img : null,
+      source: lead.source,
       title: await translate(lead.title),
       titleEn: lead.title,
       summary: await translate(summaryEn),
       ts: c.newest,
       sourcesCount: c.sources.size,
-      articles: c.items.slice(0, 5).map(i => ({ title: i.title, source: i.source, link: i.link, ts: i.ts })),
+      articles: c.items.slice(0, 8).map(i => ({ title: i.title, source: i.source, link: i.link, ts: i.ts })),
     });
   }
 
@@ -145,8 +169,8 @@ export async function buildNews(prev) {
     const a = [...c.items].sort((x, y) => (usedSources.has(x.source) - usedSources.has(y.source)) || (y.desc.length - x.desc.length))[0];
     if (!a) continue;
     usedSources.add(a.source);
-    reads.push({ title: await translate(a.title), titleEn: a.title, source: a.source, link: a.link, ts: a.ts });
-    if (reads.length >= 6) break;
+    reads.push({ title: await translate(a.title), titleEn: a.title, source: a.source, link: a.link, ts: a.ts, img: a.img || null, summary: a.desc ? await translate(sentences(a.desc)[0] || a.desc.slice(0, 200)) : '' });
+    if (reads.length >= 8) break;
   }
 
   const translations = {};

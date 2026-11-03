@@ -9,8 +9,8 @@ on:
     paths:
       - 'scripts/midterm/*.mjs'
       - 'scripts/midterm/package*.json'
-      - 'docs/nyt.js'
-      - 'docs/config.js'
+      - 'docs/app/nyt.js'
+      - 'docs/app/config.js'
       - '.github/workflows/midterm-*.yml'
 
 permissions:

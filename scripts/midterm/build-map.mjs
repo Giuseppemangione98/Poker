@@ -14,5 +14,5 @@ for (const f of topo.feature(s, s.objects.states).features) {
   const d = path(f); const c = path.centroid(f);
   out[k] = { d, c: c.map(v => Math.round(v)) };
 }
-fs.writeFileSync(new URL('../../docs/states.js', import.meta.url), '// US states (Albers USA, 975x610) generated from us-atlas@3 (public domain, US Census)\nexport const STATE_PATHS = ' + JSON.stringify(out) + ';\n');
-console.log(Object.keys(out).length, fs.statSync(new URL('../../docs/states.js', import.meta.url)).size);
+fs.writeFileSync(new URL('../../docs/app/states.js', import.meta.url), '// US states (Albers USA, 975x610) generated from us-atlas@3 (public domain, US Census)\nexport const STATE_PATHS = ' + JSON.stringify(out) + ';\n');
+console.log(Object.keys(out).length, fs.statSync(new URL('../../docs/app/states.js', import.meta.url)).size);

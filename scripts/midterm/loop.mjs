@@ -4,8 +4,8 @@
 // Every 10 minutes: rebuild the news digest. Commits data files back to the branch.
 import fs from 'node:fs';
 import { execSync } from 'node:child_process';
-import { fetchFeeds, buildSnapshot, STATE_NAMES } from '../../docs/nyt.js';
-import { SITE_URL, NTFY_INBOX, NTFY_ALERTS } from '../../docs/config.js';
+import { fetchFeeds, buildSnapshot, STATE_NAMES } from '../../docs/app/nyt.js';
+import { SITE_URL, NTFY_INBOX, NTFY_ALERTS } from '../../docs/app/config.js';
 import { buildNews } from './news.mjs';
 import { Push } from './push.mjs';
 
