@@ -96,6 +96,7 @@ async function translate(text) {
   if (cache.has(text)) return cache.get(text);
   try {
     const u = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=it&dt=t&q=' + encodeURIComponent(text.slice(0, 1800));
+    await new Promise(r => setTimeout(r, 250));
     const r = await fetch(u, { headers: { 'user-agent': UA['user-agent'] }, signal: AbortSignal.timeout(10000) });
     if (!r.ok) throw new Error(r.status);
     const j = await r.json();
@@ -111,7 +112,7 @@ export async function buildNews(prev) {
   const now = Date.now();
   const seen = new Set();
   const relevant = all
-    .filter(a => now - a.ts < 36 * 3600e3 && ELECTION_RE.test(a.title + ' ' + a.desc))
+    .filter(a => now - a.ts < 36 * 3600e3 && ELECTION_RE.test(a.title))
     .filter(a => { const k = a.title.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; })
     .sort((a, b) => b.ts - a.ts);
   if (!relevant.length) return null;

@@ -29,7 +29,7 @@ export function normalizeRace(race, office) {
   const meta = race.candidate_metadata || {};
   const won = (race.outcome && race.outcome.won) || [];
   const runoff = (race.outcome && race.outcome.advanced_to_runoff) || [];
-  const cands = (unit.candidates || []).map(c => {
+  const cands = (unit.candidates || []).filter(c => !/write-?in/i.test(String(c.nyt_id)) && !/write-?in/i.test(JSON.stringify(meta[c.nyt_id] || {}))).map(c => {
     const m = meta[c.nyt_id] || {};
     return {
       name: [m.first_name, m.last_name].filter(Boolean).join(' ') || m.full_name || String(c.nyt_id || '?'),
