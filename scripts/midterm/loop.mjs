@@ -112,7 +112,7 @@ async function sendEvents(events) {
     if (bySenate.length) out.push({ title: `Senato: ${bySenate.length} nuove proiezioni`, body: bySenate.map(c => c.short).join(' · ') });
     if (byGov.length) out.push({ title: `Governatori: ${byGov.length} nuove proiezioni`, body: byGov.map(c => c.short).join(' · ') });
   } else out.push(...calls);
-  for (const e of out) await push.broadcast({ title: e.title, body: e.body, url: './', tag: `${e.kind || 'call'}-${Date.now()}` });
+  for (const e of out) await push.broadcast({ title: e.title, body: e.body, url: 'index.html', tag: `${e.kind || 'call'}-${Date.now()}` });
 }
 
 function git(msg) {
@@ -145,7 +145,7 @@ async function newsCycle() {
   if (prevNews && top && top.sourcesCount >= 4 && !notified.news[top.titleEn] && Date.now() - (notified.lastNewsPush || 0) > 45 * 60e3) {
     notified.news[top.titleEn] = Date.now();
     notified.lastNewsPush = Date.now();
-    await push.broadcast({ title: `📰 ${top.title}`, body: top.summary.slice(0, 180), url: './#news', tag: 'news' });
+    await push.broadcast({ title: `📰 ${top.title}`, body: top.summary.slice(0, 180), url: 'index.html#news', tag: 'news' });
   }
   for (const s of news.stories) if (!notified.news[s.titleEn] && s.sourcesCount >= 4 && !prevNews) notified.news[s.titleEn] = Date.now();
 }
