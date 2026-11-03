@@ -73,15 +73,15 @@ async function fetchFeed([source, url]) {
 function cluster(articles) {
   const clusters = [];
   for (const a of articles) {
-    a.tok = tokens(a.title + ' ' + a.desc.slice(0, 160));
+    a.tok = new Set([...tokens(a.title + ' ' + a.desc.slice(0, 160))].filter(t => !GENERIC.has(t)));
     let best = null, bestScore = 0;
     for (const c of clusters) {
       let inter = 0;
-      for (const t of a.tok) if (c.tok.has(t) && !GENERIC.has(t)) inter++;
+      for (const t of a.tok) if (c.tok.has(t)) inter++;
       const score = inter / Math.min(a.tok.size || 1, c.tok.size || 1);
-      if (inter >= 3 && score > bestScore) { best = c; bestScore = score; }
+      if (inter >= 2 && score > bestScore) { best = c; bestScore = score; }
     }
-    if (best && bestScore >= 0.4) {
+    if (best && bestScore >= 0.3) {
       best.items.push(a);
     } else clusters.push({ items: [a], tok: new Set(a.tok) });
   }
@@ -168,7 +168,10 @@ export async function buildNews(prev) {
     const sources = new Set(c.items.map(i => i.source));
     const newest = Math.max(...c.items.map(i => i.ts));
     const ageH = (now - newest) / 3600e3;
-    return { ...c, sources, newest, score: sources.size * 3 + c.items.length - ageH * 0.6 };
+    const rich = c.items.some(i => i.img) ? 2 : 0;
+    const hasDesc = c.items.some(i => i.desc && i.desc.length > 60) ? 2 : 0;
+    const generic = c.items.every(i => /live (results|updates|coverage)|results:|results tracker|election results$/i.test(i.title)) ? -6 : 0;
+    return { ...c, sources, newest, score: sources.size * 3 + c.items.length + rich + hasDesc + generic - ageH * 0.6 };
   }).sort((a, b) => b.score - a.score);
 
   const stories = [];
