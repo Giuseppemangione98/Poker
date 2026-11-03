@@ -1,17 +1,16 @@
-# Checks that the app is reachable through public CDN mirrors of this repo.
+# Checks that the app is reachable through the githack CDN at this commit.
 name: midterm-check
 on:
   push:
     branches: [claude/upbeat-gates-8xs1mk]
-    paths: ['.github/workflows/midterm-check.yml']
+    paths: ['.github/workflows/midterm-check.yml', 'docs/*.html', 'docs/*.js', 'docs/*.json', 'docs/*.css']
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          for base in "https://rawcdn.githack.com/Giuseppemangione98/Poker/ddda7bc83eb0f400d786f086a6f389ad25fcb97a/docs" "https://cdn.statically.io/gh/Giuseppemangione98/Poker/ddda7bc83eb0f400d786f086a6f389ad25fcb97a/docs"; do
-            for f in index.html app.js states.js manifest.webmanifest sw.js icons/icon-192.png; do
-              curl -sS -o /dev/null -w "$base/$f %{http_code} %{content_type}\n" "$base/$f" || true
-            done
-            curl -sSI "$base/sw.js" | grep -iE "^(access-control|service-worker|content-type|cache-control)" || true
+          base="https://rawcdn.githack.com/Giuseppemangione98/Poker/${{ github.sha }}/docs"
+          echo "APP URL: $base/index.html"
+          for f in index.html app.js nyt.js config.js states.js style.css manifest.json sw.js; do
+            curl -sS -o /dev/null -w "$f %{http_code} %{content_type}\n" "$base/$f" || true
           done

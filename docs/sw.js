@@ -1,6 +1,6 @@
 // Service worker: offline shell + Web Push notifications.
-const CACHE = 'midterm-v1';
-const SHELL = ['./', 'index.html', 'style.css', 'app.js', 'nyt.js', 'states.js', 'config.js', 'manifest.webmanifest', 'icons/icon-192.png'];
+const CACHE = 'midterm-v2';
+const SHELL = ['./', 'index.html', 'style.css', 'app.js', 'nyt.js', 'states.js', 'config.js', 'manifest.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -21,7 +21,7 @@ self.addEventListener('push', e => {
   let d = {};
   try { d = e.data ? e.data.json() : {}; } catch { d = { title: 'Midterm', body: e.data ? e.data.text() : '' }; }
   e.waitUntil(self.registration.showNotification(d.title || 'Midterm 2026', {
-    body: d.body || '', tag: d.tag, icon: 'icons/icon-192.png', badge: 'icons/icon-192.png',
+    body: d.body || '', tag: d.tag, icon: 'https://raw.githubusercontent.com/Giuseppemangione98/Poker/claude/upbeat-gates-8xs1mk/docs/icons/icon-192.png',
     data: { url: d.url || './' },
   }));
 });
