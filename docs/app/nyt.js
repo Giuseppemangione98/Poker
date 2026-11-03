@@ -117,7 +117,7 @@ export async function fetchFeeds(fetchImpl = fetch, headers = {}) {
   const feeds = {};
   await Promise.all(Object.entries(OFFICES).map(async ([o, name]) => {
     try {
-      const r = await fetchImpl(`${NYT_BASE}results-${name}.json?t=${Date.now()}`, { headers, cache: 'no-store' });
+      const r = await fetchImpl(`${NYT_BASE}results-${name}.json?t=${Date.now()}`, { headers, cache: 'no-store', signal: AbortSignal.timeout ? AbortSignal.timeout(20000) : undefined });
       feeds[o] = r.ok ? await r.json() : null;
     } catch { feeds[o] = null; }
   }));

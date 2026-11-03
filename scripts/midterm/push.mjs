@@ -74,7 +74,7 @@ export class Push {
 
   async sendOne(sub, payload) {
     try {
-      await webpush.sendNotification(sub, JSON.stringify(payload), { TTL: 6 * 3600, urgency: 'high', topic: (payload.tag || 'midterm').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 32) });
+      await webpush.sendNotification(sub, JSON.stringify(payload), { timeout: 15000, TTL: 6 * 3600, urgency: 'high', topic: (payload.tag || 'midterm').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 32) });
       return true;
     } catch (e) {
       if (e.statusCode === 404 || e.statusCode === 410 || e.statusCode === 403) { delete this.subs[sub.endpoint]; this.dirty = true; }

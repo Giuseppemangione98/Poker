@@ -118,13 +118,13 @@ async function sendEvents(events) {
 function git(msg) {
   if (NO_GIT) return;
   try {
-    execSync('git add docs/data scripts/midterm/state', { cwd: ROOT, stdio: 'ignore' });
-    if (!execSync('git status --porcelain docs/data scripts/midterm/state', { cwd: ROOT }).toString().trim()) return;
-    execSync(`git commit -q -m "${msg}"`, { cwd: ROOT });
+    execSync('git add docs/data scripts/midterm/state', { timeout: 60000, cwd: ROOT, stdio: 'ignore' });
+    if (!execSync('git status --porcelain docs/data scripts/midterm/state', { timeout: 60000, cwd: ROOT }).toString().trim()) return;
+    execSync(`git commit -q -m "${msg}"`, { timeout: 60000, cwd: ROOT });
     for (let i = 0; i < 4; i++) {
       try {
-        execSync('git pull -q --rebase -X theirs origin HEAD', { cwd: ROOT, stdio: 'ignore' });
-        execSync('git push -q origin HEAD', { cwd: ROOT, stdio: 'ignore' });
+        execSync('git pull -q --rebase -X theirs origin HEAD', { timeout: 60000, cwd: ROOT, stdio: 'ignore' });
+        execSync('git push -q origin HEAD', { timeout: 60000, cwd: ROOT, stdio: 'ignore' });
         return;
       } catch { execSync(`sleep ${2 ** (i + 1)}`); }
     }
@@ -170,6 +170,8 @@ const end = Date.now() + LOOP_MINUTES * 60e3;
 let lastNews = 0, lastCommit = 0, dirty = false;
 while (true) {
   const t0 = Date.now();
+  // Watchdog: if one cycle hangs for more than 4 minutes, exit so the next slice restarts cleanly.
+  const watchdog = setTimeout(() => { console.log('watchdog: cycle stuck, exiting'); process.exit(0); }, 4 * 60e3);
   try {
     const r = await resultsCycle();
     if (r && r.changed) dirty = true;
@@ -182,6 +184,7 @@ while (true) {
       lastCommit = Date.now(); dirty = false;
     }
   } catch (e) { console.log('cycle error', e.stack || e.message); }
+  clearTimeout(watchdog);
   if (ONCE || Date.now() > end) break;
   await sleep(Math.max(5e3, 60e3 - (Date.now() - t0)));
 }
