@@ -59,7 +59,8 @@ document.body.insertAdjacentHTML('beforeend', `
     <div class="panel" id="balance"></div>
     <div class="panel map-panel">
       <svg id="map" viewBox="0 0 975 610" role="img" aria-label="Mappa degli Stati Uniti"></svg>
-      <ul class="legend" aria-hidden="true"><li><i class="lg-d"></i>Democratici</li><li><i class="lg-r"></i>Repubblicani</li><li><i class="lg-w"></i>In attesa</li></ul>
+      <ul class="legend" aria-hidden="true"><li><i class="lg-d"></i>Democratici</li><li><i class="lg-r"></i>Repubblicani</li><li><i class="lg-w"></i>In attesa</li><li id="lg-none"><i class="lg-n"></i>Nessuna elezione</li></ul>
+      <p class="map-cap" id="map-cap"></p>
     </div>
     <div class="sec-h"><h2>Da seguire</h2><span id="watch-sub"></span></div>
     <div class="list" id="watch"></div>
@@ -179,6 +180,7 @@ function renderBalance() {
 
 function buildMap() {
   const svg = $('#map'), ns = 'http://www.w3.org/2000/svg';
+  svg.innerHTML = '<defs><pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" class="hatch-bg"/><line x1="0" y1="0" x2="0" y2="7" class="hatch-ln"/></pattern></defs>';
   for (const [st, { d }] of Object.entries(STATE_PATHS)) {
     const p = document.createElementNS(ns, 'path');
     p.setAttribute('d', d); p.dataset.st = st; p.setAttribute('tabindex', '0'); p.setAttribute('role', 'button'); p.setAttribute('aria-label', STATE_NAMES[st]);
@@ -195,6 +197,11 @@ function buildMap() {
   svg.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.dataset.st) { e.preventDefault(); openState(e.target.dataset.st); } });
 }
 function renderMap() {
+  const sched = app.mode === 'S' ? SENATE_2026.length : app.mode === 'G' ? GOV_2026.length : 50;
+  const cap = $('#map-cap');
+  if (cap) cap.textContent = app.mode === 'H' ? 'Camera: colore del partito che vince o guida più seggi nello stato. Tocca uno stato per i distretti.'
+    : `${MODE[app.mode]}: si vota in ${sched} stati su 50. Gli stati a righe non hanno questa elezione nel 2026 — toccali per vedere le altre gare.`;
+  const ln = $('#lg-none'); if (ln) ln.hidden = app.mode === 'H';
   document.querySelectorAll('#map path').forEach(p => p.setAttribute('class', 'f-' + fillOf(p.dataset.st) + (app.selected === p.dataset.st ? ' sel' : '')));
   document.querySelectorAll('#map text').forEach(t => t.setAttribute('class', /2$/.test(fillOf(t.dataset.st)) ? 'inv' : ''));
 }
@@ -254,7 +261,9 @@ function openState(st) {
   app.selected = st; renderMap();
   $('#sheet-title').textContent = STATE_NAMES[st] || st;
   const out = [];
-  for (const o of ['S', 'G']) {
+  if (app.mode !== 'H' && !races(st, app.mode).length && !(app.mode === 'S' ? SENATE_2026 : GOV_2026).includes(st))
+    out.push(`<div class="hint" style="margin:0 0 4px">In ${esc(STATE_NAMES[st] || st)} nel 2026 non si vota per ${app.mode === 'S' ? 'il Senato' : 'il governatore'}. Qui sotto le altre gare dello stato.</div>`);
+  for (const o of (app.mode === 'G' ? ['G', 'S'] : ['S', 'G'])) {
     const rs = races(st, o), sched = (o === 'S' ? SENATE_2026 : GOV_2026).includes(st);
     if (!rs.length && !sched) continue;
     out.push(`<p class="grp-h">${OFFICE[o]}</p>` + (rs.length ? rs.map(r => `<div class="card-in" style="margin-bottom:10px">
